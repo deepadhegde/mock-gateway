@@ -1,0 +1,105 @@
+{
+  "swagger": "2.0",
+  "info": { "title": "Cardhub API", "version": "1.0" },
+  "host": "localhost:8080",
+  "basePath": "/",
+  "paths": {
+    "/api/v1/health": {
+      "get": {
+        "summary": "Health check",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "examples": {
+              "application/json": { "status": "ok" }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cards": {
+      "get": {
+        "summary": "Get card details",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "examples": {
+              "application/json": {
+                "id": "card_test_abc",
+                "last4": "4242",
+                "status": "active",
+                "type": "virtual"
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create card",
+        "responses": {
+          "201": {
+            "description": "Created",
+            "examples": {
+              "application/json": {
+                "id": "card_test_new",
+                "status": "created"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/otp/send": {
+      "post": {
+        "summary": "Send OTP",
+        "responses": {
+          "200": {
+            "examples": {
+              "application/json": { "message": "OTP sent", "expires_in": 300 }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/otp/verify": {
+      "post": {
+        "summary": "Verify OTP",
+        "responses": {
+          "200": {
+            "examples": {
+              "application/json": { "token": "jwt_test_token", "user_id": "usr_test_001" }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users": {
+      "get": {
+        "summary": "Get user details",
+        "responses": {
+          "200": {
+            "examples": {
+              "application/json": {
+                "id": "usr_test_001",
+                "email": "test@api.com",
+                "kyc_status": "verified"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/status": {
+      "get": {
+        "summary": "Application status",
+        "responses": {
+          "200": {
+            "examples": {
+              "application/json": { "status": "approved", "step": "card_delivery" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

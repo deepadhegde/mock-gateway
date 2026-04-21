@@ -1,0 +1,17 @@
+gateway:
+  port: 9000
+  host: "0.0.0.0"
+
+services:
+  - name: cardhub
+    url: http://localhost:8080
+    spec: specs/cardhub/swagger.json
+
+  - name: service-b
+    url: http://localhost:8081
+    spec: specs/service-b/swagger.json
+
+roles:
+  admin_token:  ""   # leave empty = open/dev mode (all callers treated as admin)
+  tester_token: ""
+  viewer_token: ""

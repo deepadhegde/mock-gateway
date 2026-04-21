@@ -1,0 +1,38 @@
+{
+  "swagger": "2.0",
+  "info": { "title": "Service B API", "version": "1.0" },
+  "host": "localhost:8081",
+  "basePath": "/",
+  "paths": {
+    "/api/v1/health": {
+      "get": {
+        "summary": "Health check",
+        "responses": {
+          "200": {
+            "examples": {
+              "application/json": { "status": "ok", "service": "service-b" }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/items": {
+      "get": {
+        "summary": "List items",
+        "responses": {
+          "200": {
+            "examples": {
+              "application/json": {
+                "count": 2,
+                "items": [
+                  { "id": "item_001", "name": "Item One" },
+                  { "id": "item_002", "name": "Item Two" }
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
