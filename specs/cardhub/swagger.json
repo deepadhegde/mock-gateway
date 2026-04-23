@@ -1,105 +1,4198 @@
 {
-  "swagger": "2.0",
-  "info": { "title": "Cardhub API", "version": "1.0" },
-  "host": "localhost:8080",
-  "basePath": "/",
-  "paths": {
-    "/api/v1/health": {
-      "get": {
-        "summary": "Health check",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "examples": {
-              "application/json": { "status": "ok" }
-            }
-          }
-        }
-      }
+    "swagger": "2.0",
+    "info": {
+        "description": "Card management, user onboarding, KYC, and banking services.",
+        "title": "CardHub API",
+        "contact": {},
+        "version": "1.0"
     },
-    "/api/v1/cards": {
-      "get": {
-        "summary": "Get card details",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "examples": {
-              "application/json": {
-                "id": "card_test_abc",
-                "last4": "4242",
-                "status": "active",
-                "type": "virtual"
-              }
+    "host": "cardstack-sit.popclub.co.in",
+    "basePath": "/",
+    "schemes": ["https"],
+    "paths": {
+        "/api/v1/addresses": {
+            "get": {
+                "description": "Get all addresses for the authenticated user (JWT auth)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "address"
+                ],
+                "summary": "List addresses",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer JWT token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Address"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
             }
-          }
-        }
-      },
-      "post": {
-        "summary": "Create card",
-        "responses": {
-          "201": {
-            "description": "Created",
-            "examples": {
-              "application/json": {
-                "id": "card_test_new",
-                "status": "created"
-              }
+        },
+        "/api/v1/application": {
+            "get": {
+                "description": "Return configuration/credentials needed by the frontend at startup",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "onboarding"
+                ],
+                "summary": "Get application credentials",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
             }
-          }
+        },
+        "/api/v1/card-statuses": {
+            "get": {
+                "description": "Return users filtered by card status for post-onboarding communication (BasicToken auth)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "post-onboarding"
+                ],
+                "summary": "List card statuses for comms",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Basic token",
+                        "name": "Source-Api-Key",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Comma-separated card statuses to include",
+                        "name": "included",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Comma-separated card statuses to exclude",
+                        "name": "excluded",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/card-statuses/{mobile_number}": {
+            "get": {
+                "description": "Return card status for a specific mobile number for post-onboarding comms (BasicToken auth)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "post-onboarding"
+                ],
+                "summary": "Get card status for a user (comms)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Basic token",
+                        "name": "Source-Api-Key",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Plain mobile number",
+                        "name": "mobile_number",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/cards": {
+            "get": {
+                "description": "Retrieve card details for the authenticated user (JWT auth)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "card"
+                ],
+                "summary": "Get card details",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer JWT token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Card"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Submit name and father name for card creation (JWT auth)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "card"
+                ],
+                "summary": "Create card details",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer JWT token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Card details",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.CardRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Card"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Update name or father name on card (JWT auth)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "card"
+                ],
+                "summary": "Update card details",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer JWT token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Fields to update",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.CardRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Card"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/cards/names": {
+            "get": {
+                "description": "Return suggested names to print on the card for the authenticated user (JWT auth)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "card"
+                ],
+                "summary": "Get card name suggestions",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer JWT token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/clear": {
+            "post": {
+                "description": "Hard-delete all data for a given mobile number (BasicToken auth, internal)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "oncall"
+                ],
+                "summary": "Clear user data",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Basic token",
+                        "name": "Source-Api-Key",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "CX phone number payload",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/currentaddress": {
+            "post": {
+                "description": "Submit current residential address and trigger CAF1 at bank (JWT auth)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "address"
+                ],
+                "summary": "Save current address",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer JWT token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Current address",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.AddressRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Address"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Update an existing current address record (JWT auth)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "address"
+                ],
+                "summary": "Update current address",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer JWT token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated address fields",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.UpdateAddressRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Address"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/deliveryaddress": {
+            "patch": {
+                "description": "Mark an existing address as the card delivery address (JWT auth)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "address"
+                ],
+                "summary": "Set delivery address",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer JWT token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Delivery address selection",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.DeliveryAddressRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Address"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/dropdowns": {
+            "get": {
+                "description": "Return occupation, company, industry and other dropdown lists (JWT auth)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "onboarding"
+                ],
+                "summary": "Get dropdown options",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer JWT token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/useronboarding.DropDowns"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/ekyc": {
+            "get": {
+                "description": "Generate eKYC URL for the authenticated user (JWT auth)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "kyc"
+                ],
+                "summary": "Initiate eKYC",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer JWT token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/flow-status": {
+            "get": {
+                "description": "Get the flow status for a user from either flow_statuses or user_level_histories table",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "notifications"
+                ],
+                "summary": "Get flow status",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Table name (flow_statuses or user_level_histories)",
+                        "name": "table",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Mobile number",
+                        "name": "mobile",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/flow-status-sync": {
+            "post": {
+                "description": "Create or update a flow status record pushed from the OL service (IAuth)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ybl"
+                ],
+                "summary": "Sync flow status from OL",
+                "parameters": [
+                    {
+                        "description": "Flow status payload",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/get-user-info": {
+            "get": {
+                "description": "Get the user info for a user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user-info"
+                ],
+                "summary": "Get user info",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Plain mobile number",
+                        "name": "mobile_number",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.UserInfo"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/health": {
+            "get": {
+                "description": "Returns service status",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "health"
+                ],
+                "summary": "Health check",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.MessageResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/internal/cx/user/search": {
+            "post": {
+                "description": "Search for a user by mobile, email, or user ID for CX tools (BasicToken auth)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "cx"
+                ],
+                "summary": "CX user search",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Basic token",
+                        "name": "Source-Api-Key",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Search criteria",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/internal/ol/user-by-mobile": {
+            "get": {
+                "description": "Return user data and last saved level by mobile number for the OL BRE service (IAuth)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "cx"
+                ],
+                "summary": "Get user by mobile (OL/BRE)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Base64-encoded mobile number (GET)",
+                        "name": "encoded_mobile_number",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Mobile number payload (POST)",
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/internal/oncall/application-status/bulk-insert": {
+            "post": {
+                "description": "Upload a CSV file to bulk-insert application status records (OnCall token auth)",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "oncall"
+                ],
+                "summary": "Bulk insert application status",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "CSV file with application status records",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/internal/oncall/caf1-retry": {
+            "post": {
+                "description": "Retry failed CAF1 bank API calls for applications in a date range (OnCall token auth)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "oncall"
+                ],
+                "summary": "CAF1 retry",
+                "parameters": [
+                    {
+                        "description": "Date range for retry",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/oncall.CAF1RetryRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/oncall.CAF1RetryResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/internal/static-otp": {
+            "post": {
+                "description": "Enable or disable a static OTP for a test mobile number (OnCall token auth)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "oncall"
+                ],
+                "summary": "Manage static OTP",
+                "parameters": [
+                    {
+                        "description": "Static OTP configuration",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/log-search": {
+            "post": {
+                "description": "Retrieve encrypted log entries by traceType and traceId, then decrypt them (LogsAuth)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "logs"
+                ],
+                "summary": "Fetch and decrypt logs",
+                "parameters": [
+                    {
+                        "description": "Log search parameters (traceType, traceId)",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/master-list": {
+            "get": {
+                "description": "Return master list data for the YBL flow (IAuth)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ybl"
+                ],
+                "summary": "Get master list (YBL)",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/notification/status": {
+            "post": {
+                "description": "Update the status of a notification",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "notifications"
+                ],
+                "summary": "Update notification status",
+                "parameters": [
+                    {
+                        "description": "Notification status update request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/notification.UpdateNotificationStatusRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/notification.UpdateNotificationStatusResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/otp/send": {
+            "post": {
+                "description": "Send a one-time password to the given mobile number",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Send OTP",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Source API key",
+                        "name": "Source-Api-Key",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Mobile number",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/userlogin.SendOTPRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/userlogin.SendOTPResponseStruct"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/otp/verify": {
+            "post": {
+                "description": "Verify OTP, create user session, and return JWT token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Verify OTP",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Source API key",
+                        "name": "Source-Api-Key",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "OTP verification payload",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/userlogin.VerifyOTPRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/userlogin.VerifyOtpResponseStruct"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/pincode/details/{pincode}": {
+            "get": {
+                "description": "Return city and state information for a given pincode (JWT auth)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "onboarding"
+                ],
+                "summary": "Search pincode details",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer JWT token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "6-digit pincode",
+                        "name": "pincode",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/pincode/recheck": {
+            "post": {
+                "description": "Validate a pincode and update the user's current address pincode (JWT auth)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "onboarding"
+                ],
+                "summary": "Check user pincode",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer JWT token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Pincode payload",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/useronboarding.UserPincodev1"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/prefill/address": {
+            "get": {
+                "description": "Return pre-filled address data from external services (JWT auth)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "onboarding"
+                ],
+                "summary": "Prefill user data by address",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer JWT token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/prefill/mobile": {
+            "get": {
+                "description": "Return pre-filled user details sourced from external services by mobile number (JWT auth)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "onboarding"
+                ],
+                "summary": "Prefill user data by mobile",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer JWT token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/prefill/pandetails": {
+            "get": {
+                "description": "Return pre-filled user details sourced from external services by PAN (JWT auth)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "onboarding"
+                ],
+                "summary": "Prefill user data by PAN",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer JWT token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/render-vkyc-page": {
+            "get": {
+                "description": "Return vKYC screen render data including off-hours and outage info (JWT auth)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "kyc"
+                ],
+                "summary": "Render vKYC page status",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer JWT token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/sdk/token": {
+            "post": {
+                "description": "Generate an SDK JWT token for an approved/activated card user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Get SDK token",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Source API key",
+                        "name": "Source-Api-Key",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Encoded mobile number",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.GetSdkTokenRequestV1"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.GetSdkTokenResponseV1"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/sso/consent": {
+            "get": {
+                "description": "Return stored consent flags for a user by encoded mobile number",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Get SSO consent data",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Base64-encoded mobile number",
+                        "name": "encoded_mobile_number",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/userlogin.ConsentResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/sso/verify": {
+            "post": {
+                "description": "Authenticate via SSO using encoded mobile number, return JWT token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "SSO login",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Source API key",
+                        "name": "Source-Api-Key",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "SSO request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/userlogin.VerifySSORequestV1"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/userlogin.VerifyOtpResponseStruct"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/static/prescreen": {
+            "get": {
+                "description": "Return static pre-screening eligibility result for the authenticated user (JWT auth)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "onboarding"
+                ],
+                "summary": "Static pre-screen check",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer JWT token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/status": {
+            "get": {
+                "description": "Retrieve the bank application status for the authenticated user (JWT auth)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "kyc"
+                ],
+                "summary": "Get application status",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer JWT token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/users": {
+            "get": {
+                "description": "Retrieve the authenticated user's personal details (JWT auth)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Get user details",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer JWT token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/users/profiles": {
+            "get": {
+                "description": "Retrieve professional profile for the authenticated user (JWT auth)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "onboarding"
+                ],
+                "summary": "Get professional profile",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer JWT token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Submit office/professional profile for the authenticated user (JWT auth)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "onboarding"
+                ],
+                "summary": "Create professional profile",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer JWT token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Professional profile",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/useronboarding.profileRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/vkyc": {
+            "get": {
+                "description": "Generate video KYC URL for the authenticated user (JWT auth)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "kyc"
+                ],
+                "summary": "Initiate vKYC",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer JWT token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/vkyc-qna": {
+            "get": {
+                "description": "Return questions and pre-filled answers for the vKYC session (JWT auth)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "kyc"
+                ],
+                "summary": "Get vKYC Q\u0026A data",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer JWT token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/vkyc-status": {
+            "get": {
+                "description": "Return the current video KYC status for the authenticated user (JWT auth)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "kyc"
+                ],
+                "summary": "Get vKYC status",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer JWT token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/ybl/address": {
+            "post": {
+                "description": "Save a current or delivery address using encoded mobile number (IAuth)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ybl"
+                ],
+                "summary": "Save address (YBL)",
+                "parameters": [
+                    {
+                        "description": "Address payload",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/useronboarding.AddressRequestOL"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/useronboarding.SaveYblAddressesResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/ybl/addresses": {
+            "get": {
+                "description": "Retrieve all saved addresses for a user by encoded mobile number (IAuth)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ybl"
+                ],
+                "summary": "Get addresses (YBL)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Base64-encoded mobile number",
+                        "name": "mobile_number",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/ybl/consents": {
+            "get": {
+                "description": "Retrieve consent flags for a user by encoded mobile number (IAuth)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ybl"
+                ],
+                "summary": "Get user consents (YBL)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Base64-encoded mobile number",
+                        "name": "mobile_number",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Submit consent flags for a user using encoded mobile number (IAuth)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ybl"
+                ],
+                "summary": "Save user consents (YBL)",
+                "parameters": [
+                    {
+                        "description": "Consent payload",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/useronboarding.SaveYblConsentRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/ybl/create-user": {
+            "post": {
+                "description": "Create a new user record from OL with full personal details (IAuth)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ybl"
+                ],
+                "summary": "Create user (YBL flow)",
+                "parameters": [
+                    {
+                        "description": "User creation payload",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/userlogin.CreateUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/userlogin.VerifyOtpResponseStruct"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/ybl/editform": {
+            "post": {
+                "description": "Update personal details fields like name, email, PAN, DOB (IAuth)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ybl"
+                ],
+                "summary": "Edit user form (YBL)",
+                "parameters": [
+                    {
+                        "description": "Fields to edit",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/useronboarding.EditFormRequestOL"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/useronboarding.EditFormResponseOL"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/ybl/ekyc-url": {
+            "get": {
+                "description": "Generate eKYC URL using encoded mobile number (IAuth)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ybl"
+                ],
+                "summary": "Get eKYC URL (YBL)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Base64-encoded mobile number",
+                        "name": "mobile_number",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/ybl/kyc-status": {
+            "get": {
+                "description": "Return current eKYC/vKYC stage status for a user (IAuth)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ybl"
+                ],
+                "summary": "Get KYC stage status (YBL)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Base64-encoded mobile number",
+                        "name": "mobile_number",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/ybl/name-on-card-suggestions": {
+            "get": {
+                "description": "Return suggested card names using encoded mobile number (IAuth)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ybl"
+                ],
+                "summary": "Get card name suggestions (YBL)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Base64-encoded mobile number",
+                        "name": "mobile_number",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/ybl/personal-details": {
+            "get": {
+                "description": "Retrieve card details using encoded mobile number (IAuth)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ybl"
+                ],
+                "summary": "Get card details (YBL flow)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Base64-encoded mobile number",
+                        "name": "mobile_number",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Submit card name using encoded mobile number (IAuth)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ybl"
+                ],
+                "summary": "Create card details (YBL flow)",
+                "parameters": [
+                    {
+                        "description": "Card details V2",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.CardRequestV2"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Card"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/ybl/professional-details": {
+            "get": {
+                "description": "Retrieve professional profile using encoded mobile number (IAuth)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ybl"
+                ],
+                "summary": "Get professional profile (YBL)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Base64-encoded mobile number",
+                        "name": "mobile_number",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Submit professional profile using encoded mobile number (IAuth)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ybl"
+                ],
+                "summary": "Create professional profile (YBL)",
+                "parameters": [
+                    {
+                        "description": "Professional profile V2",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/useronboarding.profileRequestV2"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/ybl/user-journey-details": {
+            "get": {
+                "description": "Return user journey stage and status for the YBL flow (IAuth)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ybl"
+                ],
+                "summary": "Get user journey details (YBL)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Base64-encoded mobile number",
+                        "name": "mobile_number",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/ybl/vkyc-health": {
+            "get": {
+                "description": "Return vKYC service availability and off-hours status (IAuth)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ybl"
+                ],
+                "summary": "vKYC health check (YBL)",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/ybl/vkyc-qna": {
+            "get": {
+                "description": "Return vKYC Q\u0026A data using encoded mobile number (IAuth)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ybl"
+                ],
+                "summary": "Get vKYC Q\u0026A data (YBL)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Base64-encoded mobile number",
+                        "name": "mobile_number",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/ybl/vkyc-status": {
+            "get": {
+                "description": "Return vKYC application status for a user by encoded mobile number (IAuth)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ybl"
+                ],
+                "summary": "Get vKYC application status (YBL)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Base64-encoded mobile number",
+                        "name": "mobile_number",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/ybl/vkyc-url": {
+            "get": {
+                "description": "Generate video KYC URL using encoded mobile number (IAuth)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ybl"
+                ],
+                "summary": "Get vKYC URL (YBL)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Base64-encoded mobile number",
+                        "name": "mobile_number",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/yesbank/callback": {
+            "post": {
+                "description": "Receive KYC/vKYC status callback from YesBank and update internal state",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "kyc"
+                ],
+                "summary": "YesBank unified callback",
+                "parameters": [
+                    {
+                        "description": "YesBank callback payload",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v2/dropdowns": {
+            "get": {
+                "description": "Return dynamic master list data for dropdowns (JWT auth)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "onboarding"
+                ],
+                "summary": "Get dynamic master lists V2",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer JWT token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v2/users": {
+            "post": {
+                "description": "Submit personal details for user onboarding (JWT auth)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Update user details V2",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer JWT token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "User details",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/useronboarding.UpdateUserDetailsAPIV2"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
         }
-      }
     },
-    "/api/v1/otp/send": {
-      "post": {
-        "summary": "Send OTP",
-        "responses": {
-          "200": {
-            "examples": {
-              "application/json": { "message": "OTP sent", "expires_in": 300 }
+    "definitions": {
+        "dto.GetSdkTokenRequestV1": {
+            "type": "object",
+            "required": [
+                "encoded_mobile_number"
+            ],
+            "properties": {
+                "encoded_mobile_number": {
+                    "type": "string"
+                },
+                "external_application_id": {
+                    "type": "string"
+                }
             }
-          }
+        },
+        "dto.GetSdkTokenResponseV1": {
+            "type": "object",
+            "properties": {
+                "arn": {
+                    "type": "string"
+                },
+                "card_status": {
+                    "type": "string"
+                },
+                "external_application_id": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "mobile_number": {
+                    "type": "string"
+                },
+                "sdk_token": {
+                    "type": "string"
+                }
+            }
+        },
+        "handlers.AddressRequest": {
+            "type": "object",
+            "properties": {
+                "address_line_1": {
+                    "type": "string"
+                },
+                "address_line_2": {
+                    "type": "string"
+                },
+                "address_line_3": {
+                    "type": "string"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "landmark": {
+                    "type": "string"
+                },
+                "postal_code": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
+                }
+            }
+        },
+        "handlers.CardRequest": {
+            "type": "object",
+            "properties": {
+                "father_name": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "handlers.CardRequestV2": {
+            "type": "object",
+            "properties": {
+                "encoded_mobile_number": {
+                    "type": "string"
+                },
+                "father_name": {
+                    "type": "string"
+                },
+                "name_on_card": {
+                    "type": "string"
+                }
+            }
+        },
+        "handlers.DeliveryAddressRequest": {
+            "type": "object",
+            "properties": {
+                "address_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "handlers.MessageResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "handlers.UpdateAddressRequest": {
+            "type": "object",
+            "properties": {
+                "address_line_1": {
+                    "type": "string"
+                },
+                "address_line_2": {
+                    "type": "string"
+                },
+                "address_line_3": {
+                    "type": "string"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "landmark": {
+                    "type": "string"
+                },
+                "postal_code": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Address": {
+            "type": "object",
+            "properties": {
+                "address_line_1": {
+                    "type": "string"
+                },
+                "address_line_2": {
+                    "type": "string"
+                },
+                "address_line_3": {
+                    "type": "string"
+                },
+                "address_type": {
+                    "$ref": "#/definitions/models.AddressType"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_delivery_address": {
+                    "type": "boolean"
+                },
+                "landmark": {
+                    "type": "string"
+                },
+                "postal_code": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.AddressType": {
+            "type": "string",
+            "enum": [
+                "PERMANENT",
+                "CURRENT",
+                "OFFICE"
+            ],
+            "x-enum-varnames": [
+                "PERMANENT",
+                "CURRENT",
+                "OFFICE"
+            ]
+        },
+        "models.Card": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "father_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.JourneyRewardsResponse": {
+            "type": "object",
+            "properties": {
+                "bre_coins": {
+                    "type": "integer"
+                },
+                "bre_reward": {
+                    "type": "boolean"
+                },
+                "campaign_activate": {
+                    "type": "boolean"
+                },
+                "vkyc_coins": {
+                    "type": "integer"
+                },
+                "vkyc_reward": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "models.UserInfo": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "full_name": {
+                    "type": "string"
+                },
+                "gender": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "mobile_number": {
+                    "type": "string"
+                },
+                "plain_mobile_number": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "notification.UpdateNotificationStatusRequest": {
+            "type": "object",
+            "properties": {
+                "attempt": {
+                    "type": "integer"
+                },
+                "channel": {
+                    "type": "string"
+                },
+                "event_name": {
+                    "type": "string"
+                },
+                "mobile_number": {
+                    "type": "string"
+                },
+                "status": {
+                    "description": "0 = failed, 1 = triggered, 2 = skipped",
+                    "type": "integer"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "notification.UpdateNotificationStatusResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "oncall.CAF1RetryRequest": {
+            "type": "object",
+            "properties": {
+                "from_date": {
+                    "description": "Format: YYYY-MM-DD",
+                    "type": "string"
+                }
+            }
+        },
+        "oncall.CAF1RetryResponse": {
+            "type": "object",
+            "properties": {
+                "completed_at": {
+                    "type": "string"
+                },
+                "duration": {
+                    "type": "string"
+                },
+                "failed_retries": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "started_at": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "success_rate": {
+                    "type": "number"
+                },
+                "successful_retries": {
+                    "type": "integer"
+                },
+                "total_processed": {
+                    "type": "integer"
+                }
+            }
+        },
+        "userlogin.ConsentResponse": {
+            "type": "object",
+            "properties": {
+                "cibil_consent": {
+                    "type": "boolean"
+                },
+                "digit_app_consent": {
+                    "type": "boolean"
+                },
+                "encoded_mobile_number": {
+                    "type": "string"
+                },
+                "is_politically_exposed": {
+                    "type": "boolean"
+                },
+                "kfs_consent": {
+                    "type": "boolean"
+                },
+                "officer_relation_consent": {
+                    "type": "boolean"
+                },
+                "promo_consent": {
+                    "type": "boolean"
+                },
+                "term_condition_consent": {
+                    "type": "boolean"
+                },
+                "user_comm_consent": {
+                    "type": "boolean"
+                },
+                "yesbank_authorize_consent": {
+                    "type": "boolean"
+                },
+                "yesbank_cross_selling": {
+                    "type": "boolean"
+                },
+                "yesbank_gogreen_consent": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "userlogin.CreateUserRequest": {
+            "type": "object",
+            "required": [
+                "term_condition_consent"
+            ],
+            "properties": {
+                "cibil_consent": {
+                    "type": "boolean"
+                },
+                "current_address_pin_code": {
+                    "type": "string"
+                },
+                "dob": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "encoded_mobile_number": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "gender": {
+                    "type": "string"
+                },
+                "is_rebranded": {
+                    "description": "true when create-user called from OL for a fresh OL user (analytics)",
+                    "type": "boolean"
+                },
+                "kfs_consent": {
+                    "type": "boolean"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "marital_status": {
+                    "type": "string"
+                },
+                "middle_name": {
+                    "type": "string"
+                },
+                "occupation": {
+                    "type": "string"
+                },
+                "pan": {
+                    "type": "string"
+                },
+                "promo_consent": {
+                    "type": "boolean"
+                },
+                "term_condition_consent": {
+                    "type": "boolean"
+                },
+                "user_comm_consent": {
+                    "type": "boolean"
+                },
+                "yesbank_authorize_consent": {
+                    "type": "boolean"
+                },
+                "yesbank_cross_selling": {
+                    "type": "boolean"
+                },
+                "yesbank_gogreen_consent": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "userlogin.SendOTPRequest": {
+            "type": "object",
+            "required": [
+                "mobile_number"
+            ],
+            "properties": {
+                "mobile_number": {
+                    "type": "string"
+                }
+            }
+        },
+        "userlogin.SendOTPResponseStruct": {
+            "type": "object",
+            "properties": {
+                "campaign_details": {
+                    "$ref": "#/definitions/models.JourneyRewardsResponse"
+                },
+                "card_user_type": {
+                    "type": "string"
+                },
+                "first_time_user": {
+                    "type": "boolean"
+                },
+                "is_campaign_active": {
+                    "type": "boolean"
+                },
+                "legacy_redirection_url": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "mobile_number": {
+                    "type": "string"
+                }
+            }
+        },
+        "userlogin.VerifyOTPRequest": {
+            "type": "object",
+            "required": [
+                "mobile_number",
+                "otp"
+            ],
+            "properties": {
+                "cibil_consent": {
+                    "type": "boolean"
+                },
+                "digit_app_consent": {
+                    "type": "boolean"
+                },
+                "kfs_consent": {
+                    "type": "boolean"
+                },
+                "mobile_number": {
+                    "type": "string"
+                },
+                "otp": {
+                    "description": ",len=6",
+                    "type": "string"
+                },
+                "promo_consent": {
+                    "description": "IsPoliticallyExposed     bool   `json:\"is_politically_exposed\"`\nUserCommConsent          bool   `json:\"user_comm_consent\" validate:\"required\"`\nTermConditionConsent     bool   `json:\"term_condition_consent\"  validate:\"required\"`\nIsOfficerRelationConsent bool   `json:\"officer_relation_consent\"`\nOverLimitConsent         bool   `json:\"overlimit_consent\"`",
+                    "type": "boolean"
+                },
+                "term_condition_consent": {
+                    "type": "boolean"
+                },
+                "user_comm_consent": {
+                    "type": "boolean"
+                },
+                "yesbank_authorize_consent": {
+                    "type": "boolean"
+                },
+                "yesbank_cross_selling": {
+                    "type": "boolean"
+                },
+                "yesbank_gogreen_consent": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "userlogin.VerifyOtpResponseStruct": {
+            "type": "object",
+            "properties": {
+                "arn": {
+                    "type": "string"
+                },
+                "campaign_details": {
+                    "$ref": "#/definitions/models.JourneyRewardsResponse"
+                },
+                "card_status": {
+                    "type": "string"
+                },
+                "is_campaign_active": {
+                    "type": "boolean"
+                },
+                "journey_failed": {
+                    "type": "string"
+                },
+                "jtid": {
+                    "type": "string"
+                },
+                "last_saved_level": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "mobile_number": {
+                    "type": "string"
+                },
+                "occupation_type": {
+                    "type": "string"
+                },
+                "prn": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "userlogin.VerifySSORequestV1": {
+            "type": "object",
+            "required": [
+                "term_condition_consent"
+            ],
+            "properties": {
+                "cibil_consent": {
+                    "type": "boolean"
+                },
+                "digit_app_consent": {
+                    "type": "boolean"
+                },
+                "encoded_mobile_number": {
+                    "type": "string"
+                },
+                "kfs_consent": {
+                    "type": "boolean"
+                },
+                "promo_consent": {
+                    "type": "boolean"
+                },
+                "term_condition_consent": {
+                    "type": "boolean"
+                },
+                "user_comm_consent": {
+                    "type": "boolean"
+                },
+                "yesbank_authorize_consent": {
+                    "type": "boolean"
+                },
+                "yesbank_cross_selling": {
+                    "type": "boolean"
+                },
+                "yesbank_gogreen_consent": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "useronboarding.AddressRequestOL": {
+            "type": "object",
+            "properties": {
+                "address_line_1": {
+                    "type": "string"
+                },
+                "address_line_2": {
+                    "type": "string"
+                },
+                "address_line_3": {
+                    "type": "string"
+                },
+                "address_type": {
+                    "type": "string"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "encoded_mobile_number": {
+                    "type": "string"
+                },
+                "is_delivery_address": {
+                    "type": "boolean"
+                },
+                "landmark": {
+                    "type": "string"
+                },
+                "pin_code": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
+                }
+            }
+        },
+        "useronboarding.DropDowns": {
+            "type": "object",
+            "properties": {
+                "bank_relations": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "business_natures": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "companies": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "company_types": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "designations": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "genders": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "industries": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "marital_statuses": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "occupations": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "pincodes": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
+                "professions": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "useronboarding.EditFormRequestOL": {
+            "type": "object",
+            "properties": {
+                "dob": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "encoded_mobile_number": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "pan": {
+                    "type": "string"
+                }
+            }
+        },
+        "useronboarding.EditFormResponseOL": {
+            "type": "object",
+            "properties": {
+                "is_success": {
+                    "type": "boolean"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "useronboarding.SaveYblAddressesResponse": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "$ref": "#/definitions/models.Address"
+                },
+                "is_delivery_address": {
+                    "type": "boolean"
+                },
+                "names_suggestion_on_card": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "useronboarding.SaveYblConsentRequest": {
+            "type": "object",
+            "properties": {
+                "bank_officer_name": {
+                    "type": "string"
+                },
+                "cibil_consent": {
+                    "type": "boolean"
+                },
+                "digit_app_consent": {
+                    "type": "boolean"
+                },
+                "encoded_mobile_number": {
+                    "type": "string"
+                },
+                "is_politically_exposed": {
+                    "type": "boolean"
+                },
+                "kfs_consent": {
+                    "type": "boolean"
+                },
+                "officer_relation_consent": {
+                    "type": "boolean"
+                },
+                "promo_consent": {
+                    "type": "boolean"
+                },
+                "relationships_with_officer": {
+                    "type": "string"
+                },
+                "term_condition_consent": {
+                    "type": "boolean"
+                },
+                "user_comm_consent": {
+                    "type": "boolean"
+                },
+                "yesbank_authorize_consent": {
+                    "type": "boolean"
+                },
+                "yesbank_cross_selling": {
+                    "type": "boolean"
+                },
+                "yesbank_gogreen_consent": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "useronboarding.UpdateUserDetailsAPIV2": {
+            "type": "object",
+            "required": [
+                "current_address_pincode",
+                "dob",
+                "email",
+                "first_name",
+                "gender",
+                "marital_status",
+                "occupation_type"
+            ],
+            "properties": {
+                "card_limit": {
+                    "type": "string"
+                },
+                "current_address_pincode": {
+                    "type": "string"
+                },
+                "dob": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "gender": {
+                    "type": "string"
+                },
+                "is_officer_relation_consent": {
+                    "type": "boolean"
+                },
+                "is_politically_exposed": {
+                    "type": "boolean"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "marital_status": {
+                    "type": "string"
+                },
+                "middle_name": {
+                    "type": "string"
+                },
+                "occupation_type": {
+                    "type": "string"
+                },
+                "pan_num": {
+                    "type": "string"
+                },
+                "political_party_name": {
+                    "type": "string"
+                },
+                "politically_exposed_person_name": {
+                    "type": "string"
+                },
+                "yes_bank_officer_name": {
+                    "type": "string"
+                },
+                "yes_bank_officer_relation": {
+                    "type": "string"
+                }
+            }
+        },
+        "useronboarding.UserPincodev1": {
+            "type": "object",
+            "required": [
+                "current_address_pincode",
+                "dob",
+                "email",
+                "first_name",
+                "last_name"
+            ],
+            "properties": {
+                "current_address_pincode": {
+                    "type": "string"
+                },
+                "dob": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "middle_name": {
+                    "type": "string"
+                },
+                "pan_num": {
+                    "type": "string"
+                }
+            }
+        },
+        "useronboarding.profileRequest": {
+            "type": "object",
+            "required": [
+                "address_line_1",
+                "address_line_2",
+                "annual_income",
+                "city",
+                "company_type",
+                "designation",
+                "office_name",
+                "postal_code",
+                "state"
+            ],
+            "properties": {
+                "address_line_1": {
+                    "type": "string",
+                    "maxLength": 40
+                },
+                "address_line_2": {
+                    "type": "string",
+                    "maxLength": 40
+                },
+                "address_line_3": {
+                    "type": "string",
+                    "maxLength": 40
+                },
+                "annual_income": {
+                    "type": "string"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "company_type": {
+                    "type": "string"
+                },
+                "designation": {
+                    "type": "string"
+                },
+                "industry_type": {
+                    "type": "string"
+                },
+                "landmark": {
+                    "type": "string"
+                },
+                "nature_of_business": {
+                    "type": "string"
+                },
+                "office_name": {
+                    "type": "string"
+                },
+                "postal_code": {
+                    "type": "string"
+                },
+                "profession": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
+                }
+            }
+        },
+        "useronboarding.profileRequestV2": {
+            "type": "object",
+            "properties": {
+                "annual_income": {
+                    "type": "string"
+                },
+                "company_name": {
+                    "type": "string"
+                },
+                "company_type": {
+                    "type": "string"
+                },
+                "designation": {
+                    "type": "string"
+                },
+                "encoded_mobile_number": {
+                    "type": "string"
+                },
+                "industry_type": {
+                    "type": "string"
+                },
+                "nature_of_business": {
+                    "type": "string"
+                },
+                "profession": {
+                    "type": "string"
+                }
+            }
+        },
+        "utils.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                },
+                "journey_status": {
+                    "type": "string"
+                },
+                "pop_error_code": {
+                    "type": "string"
+                },
+                "pop_error_msg": {
+                    "type": "string"
+                }
+            }
         }
-      }
     },
-    "/api/v1/otp/verify": {
-      "post": {
-        "summary": "Verify OTP",
-        "responses": {
-          "200": {
-            "examples": {
-              "application/json": { "token": "jwt_test_token", "user_id": "usr_test_001" }
-            }
-          }
+    "securityDefinitions": {
+        "BasicAuth": {
+            "type": "apiKey",
+            "name": "Source-Api-Key",
+            "in": "header"
+        },
+        "BearerAuth": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
-      }
-    },
-    "/api/v1/users": {
-      "get": {
-        "summary": "Get user details",
-        "responses": {
-          "200": {
-            "examples": {
-              "application/json": {
-                "id": "usr_test_001",
-                "email": "test@api.com",
-                "kyc_status": "verified"
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/status": {
-      "get": {
-        "summary": "Application status",
-        "responses": {
-          "200": {
-            "examples": {
-              "application/json": { "status": "approved", "step": "card_delivery" }
-            }
-          }
-        }
-      }
     }
-  }
 }

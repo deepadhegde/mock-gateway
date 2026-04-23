@@ -1,8 +1,10 @@
 package config
 
 import (
+	"crypto/subtle"
 	"fmt"
 	"os"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 )
@@ -14,20 +16,22 @@ type Service struct {
 }
 
 type Gateway struct {
-	Port int    `yaml:"port"`
-	Host string `yaml:"host"`
+	Port           int    `yaml:"port"`
+	Host           string `yaml:"host"`
+	GoogleClientID string `yaml:"google_client_id"`
 }
 
-type Roles struct {
-	AdminToken  string `yaml:"admin_token"`
-	TesterToken string `yaml:"tester_token"`
-	ViewerToken string `yaml:"viewer_token"`
+type User struct {
+	Name  string   `yaml:"name"`
+	Token string   `yaml:"token"`
+	Role  string   `yaml:"role"` // admin | tester | viewer
+	Envs  []string `yaml:"envs"`
 }
 
 type Config struct {
 	Gateway  Gateway   `yaml:"gateway"`
 	Services []Service `yaml:"services"`
-	Roles    Roles     `yaml:"roles"`
+	Users    []User    `yaml:"users"`
 }
 
 func Load(path string) (*Config, error) {
@@ -36,7 +40,16 @@ func Load(path string) (*Config, error) {
 		return nil, fmt.Errorf("config: read %s: %w", path, err)
 	}
 	var cfg Config
-	if err := yaml.Unmarshal(data, &cfg); err != nil {
+	expanded := os.Expand(string(data), func(key string) string {
+		if idx := strings.Index(key, ":-"); idx >= 0 {
+			if v := os.Getenv(key[:idx]); v != "" {
+				return v
+			}
+			return key[idx+2:]
+		}
+		return os.Getenv(key)
+	})
+	if err := yaml.Unmarshal([]byte(expanded), &cfg); err != nil {
 		return nil, fmt.Errorf("config: parse: %w", err)
 	}
 	if cfg.Gateway.Port == 0 {
@@ -55,4 +68,31 @@ func (c *Config) Service(name string) (*Service, bool) {
 		}
 	}
 	return nil, false
+}
+
+func (c *Config) UserByToken(token string) (*User, bool) {
+	for i := range c.Users {
+		if c.Users[i].Token == token {
+			return &c.Users[i], true
+		}
+	}
+	return nil, false
+}
+
+// UserByTokenSafe is timing-safe — prevents token enumeration via response time.
+func (c *Config) UserByTokenSafe(token string) (*User, bool) {
+	var found *User
+	for i := range c.Users {
+		if subtle.ConstantTimeCompare([]byte(c.Users[i].Token), []byte(token)) == 1 {
+			found = &c.Users[i]
+		}
+	}
+	if found != nil {
+		return found, true
+	}
+	return nil, false
+}
+
+func (c *Config) OpenMode() bool {
+	return len(c.Users) == 0
 }
