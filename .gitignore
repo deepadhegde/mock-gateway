@@ -4,4 +4,5 @@ main
 *.test
 .env
 data/
-.claude/
+.claude/*
+!.claude/commands/
