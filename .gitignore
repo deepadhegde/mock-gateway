@@ -6,3 +6,4 @@ main
 data/
 .claude/*
 !.claude/commands/
+!.claude/skills/
