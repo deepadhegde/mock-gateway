@@ -1,0 +1,61 @@
+name: Push swagger spec to mock-gateway
+description: Uploads a service swagger.json to the mock-gateway and re-seeds its routes.
+
+inputs:
+  service:
+    description: Service name registered in mock-gateway config.yaml (e.g. cardhub, my-service)
+    required: true
+  spec_path:
+    description: Path to the swagger.json file in the calling repo (e.g. docs/swagger.json)
+    required: true
+    default: docs/swagger.json
+  mock_gateway_url:
+    description: Base URL of the mock-gateway instance (e.g. https://mock.popclub.co.in)
+    required: true
+  mock_admin_token:
+    description: Admin token for the mock-gateway (X-Mock-Token header)
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Check for missing swagger annotations
+      continue-on-error: true
+      shell: bash
+      run: |
+        MISSING=0
+        handlers=$(grep 'HandleFunc' router/router.go 2>/dev/null | grep -v '^\s*//' \
+          | grep -oP '\.\K[A-Z][a-zA-Z]+(?=\))' | sort -u)
+        for fn in $handlers; do
+          file=$(grep -rl "func.*\b${fn}\b" handlers/ internal/handlers/ internal/userInfo/ 2>/dev/null | head -1)
+          [ -z "$file" ] && continue
+          lineno=$(grep -n "func.*\b${fn}\b" "$file" | head -1 | cut -d: -f1)
+          [ -z "$lineno" ] && continue
+          start=$(( lineno > 20 ? lineno - 20 : 1 ))
+          if ! sed -n "${start},${lineno}p" "$file" | grep -q "@Summary"; then
+            echo "MISSING @Summary: $fn ($file)"
+            MISSING=$((MISSING + 1))
+          fi
+        done
+        if [ "$MISSING" -gt 0 ]; then
+          echo "$MISSING handler(s) missing swagger annotation — run /swagger-annotate in Claude Code to fix."
+        else
+          echo "All registered handlers have swagger annotations."
+        fi
+
+    - name: Push spec to mock-gateway
+      continue-on-error: true
+      shell: bash
+      run: |
+        echo "Pushing ${{ inputs.service }} spec to mock-gateway..."
+        HTTP_STATUS=$(curl -s -o /tmp/mock-resp.json -w "%{http_code}" \
+          -X POST "${{ inputs.mock_gateway_url }}/admin/specs?service=${{ inputs.service }}" \
+          -H "Content-Type: application/json" \
+          -H "X-Mock-Token: ${{ inputs.mock_admin_token }}" \
+          --data-binary "@${{ inputs.spec_path }}")
+        cat /tmp/mock-resp.json
+        if [ "$HTTP_STATUS" = "200" ]; then
+          echo "Mock-gateway spec updated for ${{ inputs.service }}"
+        else
+          echo "Warning: mock-gateway returned HTTP $HTTP_STATUS — continuing"
+        fi

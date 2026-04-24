@@ -8,6 +8,13 @@ services:
     url: ${CARDHUB_URL:-http://localhost:8000}
     spec: specs/cardhub/swagger.json
 
+  # Add more services below — each needs a specs/<name>/swagger.json file
+  # and an upstream URL env var. The spec file is auto-seeded on startup.
+  #
+  # - name: my-service
+  #   url: ${MY_SERVICE_URL:-http://localhost:8001}
+  #   spec: specs/my-service/swagger.json
+
 # No users defined = open mode (no auth required, all admin endpoints accessible).
 # Add users below to enable token-based access control.
 # users:
